@@ -6,7 +6,8 @@ const ObjectId = mongoose.Types.ObjectId;
 
 module.exports = (io, socket) => {
   socket.on('Conversation:create', async (invite) => {
-    let Hash = Utils.genereHash(8);
+    console.log("Conversation:create");
+    let Hash = Utils.genereHash(1).name;
     let isUser = await UserModel.exists({ current_id: socket.id });
 
     if (!isUser) {
@@ -33,6 +34,7 @@ module.exports = (io, socket) => {
   });
 
   socket.on('Conversation:invite', async (conversation, user) => {
+    console.log("Conversation:invite");
     let User = await UserModel.findOne({ current_id: socket.id });
     if (!User) {
       socket.emit('Conversation:invite', { data: { type: "failure", msg: "You are not authorisated" } });
@@ -68,6 +70,7 @@ module.exports = (io, socket) => {
   });
 
   socket.on('Conversation:join', async (conversationUrl) => {
+    console.log("Conversation:join");
     let User = await UserModel.findOne({ current_id: socket.id });
     if (!User) {
       socket.emit('Conversation:join', { data: { type: "failure", msg: "You are not authorisated" } });
@@ -90,6 +93,7 @@ module.exports = (io, socket) => {
   });
 
   socket.on('Conversation:left', async (conversation) => {
+    console.log("Conversation:left");
     let User = await UserModel.findOne({ current_id: socket.id });
     if (!User) {
       socket.emit('Conversation:left', { data: { type: "failure", msg: "You are not authorisated" } });
@@ -102,6 +106,7 @@ module.exports = (io, socket) => {
       return
     }
 
+    socket.leave(Conversation.invite_link);
     if (Conversation.users.length == 1 && Conversation.users[0] == User._id) {
       await ConversationModel.remove({ _id: ObjectId(conversation) });
     } else {
@@ -110,13 +115,13 @@ module.exports = (io, socket) => {
 
       Conversation = await ConversationModel.updateOne({ _id: ObjectId(Conversation._id) }, { users: Conversation.users });
 
-      socket.to(ConversationUser.current_id).emit('Conversation:update', { data: { type: "success", item: Conversation } });
+      socket.on(Conversation.invite_link).emit('Conversation:update', { data: { type: "success", item: Conversation } });
     }
-    socket.leave(Conversation.invite_link);
     socket.emit('Conversation:left', { data: { type: "success" } });
   });
 
   socket.on('Conversation:list', async () => {
+    console.log("Conversation:list");
     let User = await UserModel.findOne({ current_id: socket.id });
     if (!User) {
       socket.emit('Conversation:list', { data: { type: "list", list: [] } });
@@ -129,13 +134,14 @@ module.exports = (io, socket) => {
       socket.join(conversations[i].invite_link);
     }
 
-    socket.emit('User:user_statuss', { data: { type: "list", list: conversations } });
+    socket.emit('Conversation:list', { data: { type: "list", list: conversations } });
   });
 
   socket.on('Conversation:get', async (conversation) => {
+    console.log("Conversation:get");
     let User = await UserModel.findOne({ current_id: socket.id });
     if (!User) {
-      socket.emit('Conversation:list', { data: { type: "list", list: [] } });
+      socket.emit('Conversation:get', { data: { type: "list", list: [] } });
       return
     }
 

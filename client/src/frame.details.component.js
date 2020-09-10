@@ -7,6 +7,7 @@ function FrameDetailsComponent({ API, socket }) {
   let conversationData = null;
 
   socket.on('Conversation:get', (result) => {
+    console.log('Conversation:get', result);
     if (result.data.status == "success") {
       setDetails(result.data.item);
     }

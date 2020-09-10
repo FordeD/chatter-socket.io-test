@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function ConversationComponent({ API, socket, users, self }) {
-  console.log("Render Conversations");
   const [conversations, setConversations] = useState([]);
   const [componentState, setComponentState] = useState("contacts");
   function handleSetComponentState(event) {
@@ -12,6 +11,7 @@ function ConversationComponent({ API, socket, users, self }) {
   }
 
   socket.on('Conversation:list', (result) => {
+    console.log("Conversation:list", result);
     if (result.data.type == "list") {
       let yourConversations = [];
       for (let i = 0; i < result.data.list.length; i++) {
@@ -23,6 +23,7 @@ function ConversationComponent({ API, socket, users, self }) {
   });
 
   socket.on('Conversation:update', (result) => {
+    console.log('Conversation:update', result);
     let coversationIndex = conversations.findIndex((conv) => {
       return result.data._id == conv._id;
     })
@@ -35,6 +36,7 @@ function ConversationComponent({ API, socket, users, self }) {
   });
 
   socket.on('Conversation:create', (result) => {
+    console.log('Conversation:create', result);
     if (result.data.status == "success") {
       if (result.data.invite) {
         socket.emit('Conversation:invite', result.data.item._id, result.data.invite._id);
@@ -100,7 +102,6 @@ function ConversationComponent({ API, socket, users, self }) {
   }
 
   let createConversationButton = (<center><button onClick={createConversation} className="create-new-conversation">Create new conversation</button></center>)
-
   return (
     <div>
       <div>
@@ -110,7 +111,7 @@ function ConversationComponent({ API, socket, users, self }) {
       <h3>{componentState}</h3>
       <hr />
       {componentState == "contacts" ? contactsList : conversationsList}
-      {componentState == "conversation" ? createConversationButton : null}
+      {componentState == "conversations" ? createConversationButton : false}
     </div>
   );
 }

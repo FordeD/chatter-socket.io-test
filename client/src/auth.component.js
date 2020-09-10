@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import './App.css';
 
-function AuthComponent({ autologin, socket, handleAuthorised, handleSetSelf }) {
-  const [authState, setAuthState] = useState(1);
+function AuthComponent({ socket, handleAuthorised, handleSetSelf }) {
+  const [authState, setAuthState] = useState(2);
   let cachedLogin = localStorage.getItem('login') != null ? localStorage.getItem('login') : "";
   let cachedPassword = localStorage.getItem('password') != null ? localStorage.getItem('password') : "";
   const [login, setLogin] = useState(cachedLogin);
@@ -10,26 +10,23 @@ function AuthComponent({ autologin, socket, handleAuthorised, handleSetSelf }) {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
 
-  if (autologin) {
-    setAuthState(2);
-    if (cachedLogin != "" && cachedPassword != "") {
-      UserAuth();
-    }
-  }
-
   function SetForm(event) {
+    event.preventDefault();
     console.log("SetForm", event.target.dataset.form);
     setLogin("");
     setPassword("");
     setAuthState(event.target.dataset.form);
   }
 
-  function UserRegister() {
+  function UserRegister(event) {
+    event.preventDefault();
     console.log("Register", login, password);
     socket.emit('User:register', login, password);
   }
 
-  function UserAuth() {
+  function UserAuth(event) {
+    event.preventDefault();
+    handleAuthorised(true);
     console.log("Auth", login, password);
     socket.emit('User:auth', login, password);
     localStorage.setItem('login', login);
@@ -63,7 +60,7 @@ function AuthComponent({ autologin, socket, handleAuthorised, handleSetSelf }) {
   }
 
   socket.on('User:register', (result) => {
-    console.log(result);
+    console.log('User:register', result);
     if (result.data.status == "success") {
       setAuthState(2);
     } else {
@@ -72,9 +69,8 @@ function AuthComponent({ autologin, socket, handleAuthorised, handleSetSelf }) {
   });
 
   socket.on('User:auth', (result) => {
+    console.log('User:auth', result);
     if (result.data.status == "success") {
-      handleAuthorised(true);
-
       // AutoInvite by Link
       const URLSearch = new URLSearchParams(window.location.search);
       const inviteHash = URLSearch.get('invite');
@@ -86,13 +82,12 @@ function AuthComponent({ autologin, socket, handleAuthorised, handleSetSelf }) {
       }
       //
 
-      socket.emit('User:register', login, password, name, surname);
-      socket.emit('User:list');
-      socket.emit('Conversation:list');
       handleSetSelf(result.data.item);
+      handleAuthorised(true);
     } else {
       handleAuthorised(false);
     }
+    return;
   });
 
   let form;

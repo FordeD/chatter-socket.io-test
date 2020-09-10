@@ -25,12 +25,14 @@ function FrameChatComponent({ API, socket, users, self }) {
   }
 
   socket.on('Message:send', (result) => {
+    console.log('Message:send', result);
     if (result.data.status == "success") {
       setMessages(messages.push({ user: result.data, msg: result.data.msg, id: result.data.id }));
     }
   });
 
   socket.on('Message:get', (result) => {
+    console.log('Message:get', result);
     if (result.data.status == "success") {
       if (result.data.list.length > 0) {
         let messages = result.data.list.map((message) => {

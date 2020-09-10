@@ -7,18 +7,15 @@ import FrameDetailsComponent from './frame.details.component';
 
 function ChatComponent({ API, socket }) {
 
-  const [authorised, setAuthorised] = useState(localStorage.getItem('authorised') || false);
+  const [authorised, setAuthorised] = useState(false);
   const [users, setUsers] = useState([]);
   const [self, setSelf] = useState({});
-  var autologin = false;
-
-  useEffect(() => {
-    if (authorised && authorised == true) {
-      autologin = true;
-    }
-  }, []);
 
   function handleSetSelf(data) {
+    console.log("handleSetSelf", data);
+    socket.emit('User:list');
+    socket.emit('Conversation:list');
+
     setSelf(data);
   }
 
@@ -28,7 +25,7 @@ function ChatComponent({ API, socket }) {
   }
 
   socket.on('User:user_status', (result) => {
-    console.log(result);
+    console.log('User:user_status', result);
     let newUsers = users;
     if (result.data.type == "enter") {
       setUsers(newUsers.push({ username: result.data.username, id: result.data.id, status: "Online" }));
@@ -42,6 +39,7 @@ function ChatComponent({ API, socket }) {
   });
 
   socket.on('User:list', (result) => {
+    console.log('User:list', result);
     if (result.data.type == "list") {
       let newUsers = [];
       for (let i = 0; i < result.data.list.length; i++) {
@@ -52,20 +50,19 @@ function ChatComponent({ API, socket }) {
     }
   });
 
-  console.log(authorised);
   return (
     <header className="App-header">
-      { authorised == false ? <AuthComponent autologin={autologin} API={API} socket={socket} handleAuthorised={setStatusAuthorised} handleSetSelf={handleSetSelf} /> : null}
+      { !authorised ? <AuthComponent API={API} socket={socket} handleAuthorised={setStatusAuthorised} handleSetSelf={handleSetSelf} /> : null}
       <div className="App-content">
         <div className="Contacts">
-          {authorised == true ? <ConversationComponent API={API} socket={socket} users={users} self={self} /> : null}
+          {authorised ? <ConversationComponent API={API} socket={socket} users={users} self={self} /> : null}
         </div>
         <div className="Interactive-frame">
           <div className="Chat-frame">
-            {authorised == true ? <FrameChatComponent API={API} socket={socket} users={users} self={self} /> : null}
+            {authorised ? <FrameChatComponent API={API} socket={socket} users={users} self={self} /> : null}
           </div>
           <div className="Details-Frame">
-            {authorised == true ? <FrameDetailsComponent API={API} socket={socket} /> : null}
+            {authorised ? <FrameDetailsComponent API={API} socket={socket} /> : null}
           </div>
         </div>
       </div>

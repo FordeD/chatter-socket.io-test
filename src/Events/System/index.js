@@ -12,6 +12,6 @@ module.exports = function (io, socket) {
 
     socket.broadcast.emit('User:user_status', { data: { id: currentUser._id, socket: socket.id, type: "exit" } });
 
-    await UserModel.update({ login: currentUser.login, password: currentUser.password }, { online: false, current_id: null });
+    await UserModel.updateOne({ login: currentUser.login, password: currentUser.password }, { online: false, current_id: null });
   });
 };

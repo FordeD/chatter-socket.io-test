@@ -91,10 +91,11 @@
 }
 
 .Chat-frame {
-  width: 75%;
+  width: 74%;
   height: 100vh;
   border-right: solid 1px rgba(21,21,21,0.8);
   display: inline-block;
+  float: left;
 }
 
 .Details-Frame {

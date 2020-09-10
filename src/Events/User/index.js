@@ -3,6 +3,7 @@ const UserModel = require('../../Schemes/User.Schema');
 module.exports = (io, socket) => {
   socket.on('User:register', async (login, password, name, surname) => {
     console.log('User:register', login, password);
+    console.log(socket.id);
     let isFound = await UserModel.exists({ login: login });
     if (isFound) {
       socket.emit('User:register', { data: { status: "failure", msg: "login already exist" } });
@@ -30,17 +31,16 @@ module.exports = (io, socket) => {
 
     let isFound = await UserModel.exists({ login: login });
     if (!isFound) {
-      socket.emit('User:register', { data: { status: "failure", msg: "user not created" } });
+      socket.emit('User:auth', { data: { status: "failure", msg: "user not created" } });
       return;
     }
 
     let currentUser = await UserModel.findOne({ login: login, password: password });
 
     if (!currentUser) {
-      socket.emit('User:register', { data: { status: "failure", msg: "server error on auth" } });
+      socket.emit('User:auth', { data: { status: "failure", msg: "server error on auth" } });
       return;
     }
-
     await UserModel.updateOne({ login: login, password: password }, { online: true, current_id: socket.id });
 
     currentUser.id = socket.id;
@@ -61,9 +61,9 @@ module.exports = (io, socket) => {
 
     socket.emit('User:get', { data: { status: "success", item: { currentUser } } });
   });
-  
-  socket.on('User:list', async () => {
 
+  socket.on('User:list', async () => {
+    console.log('User:list');
     let baseUsers = await UserModel.find({});
     if (!baseUsers || baseUsers.length) {
       socket.emit('User:user_status', { data: { type: "list", list: [] } });
@@ -77,7 +77,8 @@ module.exports = (io, socket) => {
       return user;
     });
 
-    socket.emit('User:user_statuss', { data: { type: "list", list: listOfUsers } });
+    console.log("Return result");
+    socket.emit('User:user_status', { data: { type: "list", list: listOfUsers } });
   }
   );
 };
