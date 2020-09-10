@@ -76,7 +76,8 @@ function AuthComponent({ autologin, socket, handleAuthorised }) {
     if (result.data.status == "success") {
       handleAuthorised(true);
       socket.emit('User:register', login, password, name, surname);
-      localStorage.setItem('sessionID', result.data.id)
+      socket.emit('User:list');
+      socket.emit('Conversation:list');
     } else {
       handleAuthorised(false);
     }

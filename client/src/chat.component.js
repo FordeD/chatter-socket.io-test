@@ -9,6 +9,7 @@ function ChatComponent({ API, socket }) {
 
   const [authorised, setAuthorised] = useState(localStorage.getItem('authorised') || false);
   const [users, setUsers] = useState([]);
+  const [conversations, setConversations] = useState([]);
   var autologin = false;
 
   useEffect(() => {
@@ -34,6 +35,40 @@ function ChatComponent({ API, socket }) {
     } else if (result.data.type == "list") {
       setUsers(result.data.list);
     }
+  });
+
+  socket.on('User:list', (result) => {
+    if (result.data.type == "list") {
+      let newUsers = [];
+      for (let i = 0; i < result.data.list.length; i++) {
+        let user = result.data.list[i];
+        newUsers.push(user);
+      }
+      setUsers(newUsers);
+    }
+  });
+
+  socket.on('Conversation:list', (result) => {
+    if (result.data.type == "list") {
+      let yourConversations = [];
+      for (let i = 0; i < result.data.list.length; i++) {
+        let user = result.data.list[i];
+        yourConversations.push(user);
+      }
+      setConversations(newUsers);
+    }
+  });
+
+  socket.on('Conversation:update', (result) => {
+    let coversationIndex = conversations.findIndex((conv) => {
+      return result.data._id == conv._id;
+    })
+
+    let newConversations = conversations;
+    newConversations[coversationIndex] = result.data;
+
+    setConversations(newConversations);
+
   });
 
   return (
