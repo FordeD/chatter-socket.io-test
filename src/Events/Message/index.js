@@ -1,6 +1,7 @@
 const ConversationModel = require('../../Schemes/Conversation.Schema');
 const UserModel = require('../../Schemes/User.Schema');
 const MessageModel = require('../../Schemes/Message.Schema');
+const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
 module.exports = (io, socket) => {
@@ -18,13 +19,13 @@ module.exports = (io, socket) => {
       return
     }
 
-    await MessageModel.create({
+    let Message = await MessageModel.create({
       conversation_id: conversation,
       text: text,
       user: User._id
     });
 
-    io.to(Conversation.invite_link).emit('Message:send', { user: User._id, msg: text });
+    io.in(Conversation.invite_link).emit('Message:send', { data: { type: "success", user: User._id, msg: text, id: Message._id } });
 
   });
 
@@ -37,7 +38,7 @@ module.exports = (io, socket) => {
 
     let messages = await MessageModel.find({ conversation_id: ObjectId(conversation) }, {}, { sort: { 'created_at': -1 } }).limit(count ? count : 100);
 
-    socket.emit('Message:get', { data: { type: "success", list: messages } });
+    socket.emit('Message:get', { data: { type: "success", list: messages, conversation: conversation } });
   });
 
   socket.on('Message:delete', async (conversation, message) => {
@@ -46,6 +47,8 @@ module.exports = (io, socket) => {
       socket.emit('Message:delete', { data: { type: "failure", msg: "You are not authorisated" } });
       return
     }
+
+    let Conversation = await ConversationModel.findOne({ _id: ObjectId(conversation) });
 
     let Message = await MessageModel.findOne({ conversation_id: ObjectId(conversation), _id: ObjectId(message) });
 
@@ -60,7 +63,7 @@ module.exports = (io, socket) => {
     }
 
     await MessageModel.remove({ _id: ObjectId(message) });
-    socket.emit('Message:delete', { data: { type: "success" } });
+    socket.in(Conversation.invite_link).emit('Message:delete', { data: { type: "success", msg: Message._id, state: "deleted" } });
   });
 
   socket.on('Message:edit', async (conversation, message, editedText) => {
@@ -69,6 +72,8 @@ module.exports = (io, socket) => {
       socket.emit('Message:edit', { data: { type: "failure", msg: "You are not authorisated" } });
       return
     }
+
+    let Conversation = await ConversationModel.findOne({ _id: ObjectId(conversation) });
 
     let Message = await MessageModel.findOne({ conversation_id: ObjectId(conversation), _id: ObjectId(message) });
 
@@ -85,5 +90,6 @@ module.exports = (io, socket) => {
     await MessageModel.updateOne({ _id: ObjectId(message) }, { text: editedText });
 
     socket.emit('Message:edit', { data: { type: "success" } });
+    socket.in(Conversation.invite_link).emit('Message:edit', { data: { type: "success", msg: Message._id, state: "edited", text: editedText } });
   });
 };

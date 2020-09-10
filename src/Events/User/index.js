@@ -61,7 +61,7 @@ module.exports = (io, socket) => {
 
     socket.emit('User:get', { data: { status: "success", item: { currentUser } } });
   });
-
+  
   socket.on('User:list', async () => {
 
     let baseUsers = await UserModel.find({});

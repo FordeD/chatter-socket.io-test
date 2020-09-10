@@ -1,10 +1,11 @@
 const ConversationModel = require('../../Schemes/Conversation.Schema');
 const UserModel = require('../../Schemes/User.Schema');
 const Utils = require('../../Utils');
+const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
 
 module.exports = (io, socket) => {
-  socket.on('Conversation:create', async () => {
+  socket.on('Conversation:create', async (invite) => {
     let Hash = Utils.genereHash(8);
     let isUser = await UserModel.exists({ current_id: socket.id });
 
@@ -19,10 +20,14 @@ module.exports = (io, socket) => {
     let conversation = await ConversationModel.create({
       users: [currentUser._id],
       invite_link: Hash,
-      name: "Беседа " + today.toISOString()
+      name: "Conv " + today.toISOString()
     });
 
-    socket.emit('Conversation:create', { data: { status: "success", item: conversation } });
+    if (invite) {
+      socket.emit('Conversation:create', { data: { status: "success", item: conversation, invite: invite } });
+    } else {
+      socket.emit('Conversation:create', { data: { status: "success", item: conversation } });
+    }
 
     socket.join(conversation.invite_link);
   });
@@ -59,7 +64,7 @@ module.exports = (io, socket) => {
 
     io.sockets.connected[CurrentUser.current_id].join(Conversation.invite_link);
 
-    socket.emit('Conversation:invite', { data: { type: "success", item: Conversation } });
+    socket.in(Conversation.invite_link).emit('Conversation:update', { data: { type: "success", item: Conversation } });
   });
 
   socket.on('Conversation:join', async (conversationUrl) => {
@@ -79,13 +84,7 @@ module.exports = (io, socket) => {
 
     Conversation = await ConversationModel.updateOne({ _id: ObjectId(Conversation._id) }, { users: Conversation.users });
 
-    for (let i = 0; i < Conversation.users.length; i++) {
-      let user = Conversation.users[i];
-      let ConversationUser = await UserModel.findOne({ _id: ObjectId(user) });
-      if (ConversationUser && ConversationUser.online) {
-        socket.to(ConversationUser.current_id).emit('Conversation:update', { data: { type: "success", item: Conversation } });
-      }
-    }
+    socket.to(ConversationUser.current_id).emit('Conversation:update', { data: { type: "success", item: Conversation } });
 
     socket.join(conversations[i].invite_link);
   });
@@ -111,13 +110,7 @@ module.exports = (io, socket) => {
 
       Conversation = await ConversationModel.updateOne({ _id: ObjectId(Conversation._id) }, { users: Conversation.users });
 
-      for (let i = 0; i < Conversation.users.length; i++) {
-        let user = Conversation.users[i];
-        let ConversationUser = await UserModel.findOne({ _id: ObjectId(user) });
-        if (ConversationUser && ConversationUser.online) {
-          socket.to(ConversationUser.current_id).emit('Conversation:update', { data: { type: "success", item: Conversation } });
-        }
-      }
+      socket.to(ConversationUser.current_id).emit('Conversation:update', { data: { type: "success", item: Conversation } });
     }
     socket.leave(Conversation.invite_link);
     socket.emit('Conversation:left', { data: { type: "success" } });
@@ -137,5 +130,17 @@ module.exports = (io, socket) => {
     }
 
     socket.emit('User:user_statuss', { data: { type: "list", list: conversations } });
+  });
+
+  socket.on('Conversation:get', async (conversation) => {
+    let User = await UserModel.findOne({ current_id: socket.id });
+    if (!User) {
+      socket.emit('Conversation:list', { data: { type: "list", list: [] } });
+      return
+    }
+
+    let Conversation = await ConversationModel.find({ _id: conversation });
+
+    socket.emit('Conversation:get', { data: { status: "success", item: Conversation } });
   });
 };

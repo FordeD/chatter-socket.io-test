@@ -1,6 +1,7 @@
-var app = require('express')();
-var http = require('http').createServer(app);
-var io = require('socket.io')(http);
+const app = require('express')();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const DataBase = require('./settings');
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '../client/public/index.html');
@@ -18,8 +19,6 @@ const Call = require('./Events/Call');
 const System = require('./Events/System');
 
 io.on('connection', (socket) => {
-  console.log('User connected');
-
   User(io, socket);
   Message(io, socket);
   Conversation(io, socket);

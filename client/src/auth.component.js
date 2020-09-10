@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 
-function AuthComponent({ autologin, socket, handleAuthorised }) {
+function AuthComponent({ autologin, socket, handleAuthorised, handleSetSelf }) {
   const [authState, setAuthState] = useState(1);
   let cachedLogin = localStorage.getItem('login') != null ? localStorage.getItem('login') : "";
   let cachedPassword = localStorage.getItem('password') != null ? localStorage.getItem('password') : "";
@@ -72,12 +72,24 @@ function AuthComponent({ autologin, socket, handleAuthorised }) {
   });
 
   socket.on('User:auth', (result) => {
-    console.log(result);
     if (result.data.status == "success") {
       handleAuthorised(true);
+
+      // AutoInvite by Link
+      const URLSearch = new URLSearchParams(window.location.search);
+      const inviteHash = URLSearch.get('invite');
+
+      if (inviteHash) {
+        socket.emit('Conversation:join', inviteHash);
+        // Remove search param after join
+        window.history.replaceState(null, null, window.location.pathname);
+      }
+      //
+
       socket.emit('User:register', login, password, name, surname);
       socket.emit('User:list');
       socket.emit('Conversation:list');
+      handleSetSelf(result.data.item);
     } else {
       handleAuthorised(false);
     }
@@ -119,6 +131,8 @@ function AuthComponent({ autologin, socket, handleAuthorised }) {
       </div>
     )
   }
+
+  console.log("RENDER AUTH");
   return (
     <div className="form-background">
       {form}

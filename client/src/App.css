@@ -24,15 +24,120 @@
   color: white;
 }
 
+.App-header > div {
+  width: 100vw;
+  height: 100vh;
+}
 .App-link {
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+.form-background {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(48,48,48, 0.75);
+  z-index: 100;
+}
+
+.form {
+  margin: 15% auto;
+  width: 25vw;
+  min-height: 200px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background-color: #282c34;
+}
+
+.form > h2 {
+  display: block;
+  width: 100%;
+  height: 45px;
+  text-align: center;
+  color: #c6c6c6;
+}
+
+.App-content {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+}
+
+.Contacts {
+  width: 27vw;
+  height: 100vh;
+  border-right: solid 1px rgba(21,21,21,0.8);
+  overflow-y: auto;
+  display: inline-block;
+}
+
+.Chat-element {
+  width: 100%;
+  height:35px;
+  background: none;
+  cursor: pointer;
+}
+
+.Chat-element:hover {
+  background: rgba(98,98,98,0.15);
+}
+
+.Interactive-frame {
+  width: 72vw;
+  height: 100vh;
+  background: none;
+  display: inline-block;
+}
+
+.Chat-frame {
+  width: 75%;
+  height: 100vh;
+  border-right: solid 1px rgba(21,21,21,0.8);
+  display: inline-block;
+}
+
+.Details-Frame {
+  width: 24%;
+  height: 100vh;
+  display: inline-block;
+}
+
+.Chat-messages-list {
+  width: 100%;
+  height: 80vh;
+  overflow: auto;
+  border-bottom: solid 1px rgba(21,21,21,0.8);
+}
+
+.Controls-panel {
+  width: 100%;
+  height: 19.5vh;
+  line-height: 20vh;
+}
+
+.Video-call, .Send-message {
+  width: 50px;
+  height: 50px;
+  float: left;
+  display: inline-block;
+}
+
+.Message-input {
+  width: 70%;
+  height: 50px;
+  display: inline;
+  float: left;
+}
+
+.Contacts-data {
+  width: 100%;
+  height: 60vh;
+
+}
+
+.Contacts-data > span {
+  display: inline;
+  width: 100%;
+  height: 30px;
 }
