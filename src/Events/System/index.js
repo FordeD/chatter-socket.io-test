@@ -1,11 +1,17 @@
+const UserModel = require('../../Schemes/User.Schema');
+
 module.exports = function (io, socket) {
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     console.log('user disconnected');
 
-    socket.broadcast.emit('Global:user_status', { data: { id: socket.id, type: "exit" } });
-  });
+    let currentUser = await UserModel.findOne({ current_id: socket.id });
 
-  socket.on('Global:list_users', () => {
-    socket.emit('Global:user_status', { data: { type: "list", list: [] } });
-  })
+    if (!currentUser) {
+      return
+    }
+
+    socket.broadcast.emit('User:user_status', { data: { id: currentUser._id, socket: socket.id, type: "exit" } });
+
+    await UserModel.update({ login: currentUser.login, password: currentUser.password }, { online: false, current_id: null });
+  });
 };

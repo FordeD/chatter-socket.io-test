@@ -7,6 +7,8 @@ function AuthComponent({ autologin, socket, handleAuthorised }) {
   let cachedPassword = localStorage.getItem('password') != null ? localStorage.getItem('password') : "";
   const [login, setLogin] = useState(cachedLogin);
   const [password, setPassword] = useState(cachedPassword);
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
 
   if (autologin) {
     setAuthState(2);
@@ -48,7 +50,14 @@ function AuthComponent({ autologin, socket, handleAuthorised }) {
         setPassword(value);
         break;
       }
-
+      case "name": {
+        setName(value);
+        break;
+      }
+      case "surname": {
+        setSurname(value);
+        break;
+      }
       default: break;
     }
   }
@@ -66,7 +75,7 @@ function AuthComponent({ autologin, socket, handleAuthorised }) {
     console.log(result);
     if (result.data.status == "success") {
       handleAuthorised(true);
-      socket.emit('User:register', login, password);
+      socket.emit('User:register', login, password, name, surname);
       localStorage.setItem('sessionID', result.data.id)
     } else {
       handleAuthorised(false);
@@ -83,6 +92,12 @@ function AuthComponent({ autologin, socket, handleAuthorised }) {
         </div>
         <div>
           <input className={"input password"} value={password} placeholder="Пароль" onChange={handleInput}></input>
+        </div>
+        <div>
+          <input className={"input name"} value={name} placeholder="Имя" onChange={handleInput}></input>
+        </div>
+        <div>
+          <input className={"input surname"} value={surname} placeholder="Фамилия" onChange={handleInput}></input>
         </div>
         <button onClick={UserRegister}>Регистрация</button>
         <button onClick={SetForm} data-form={2}>Авторизоваться</button>

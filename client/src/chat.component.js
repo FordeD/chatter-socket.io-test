@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import AuthComponent from './auth.component';
+import ConversationComponent from './conversation.component';
+import FrameChatComponent from './frame.chat.component';
+import FrameDetailsComponent from './frame.details.component';
 
 function ChatComponent({ API, socket }) {
 
@@ -19,14 +22,14 @@ function ChatComponent({ API, socket }) {
     localStorage.setItem('authorised', state);
   }
 
-  socket.on('Global:user_status', (result) => {
+  socket.on('User:user_status', (result) => {
     console.log(result);
     let newUsers = users;
     if (result.data.type == "enter") {
       setUsers(newUsers.push({ username: result.data.username, id: result.data.id, status: "Online" }));
     } else if (result.data.type == "exit") {
       let currentUserIndex = newUsers.findIndex((user) => user.id == result.data.id);
-      newUsers = newUsers.splice(currentUserIndex, 1);
+      newUsers = newUsers[currentUserIndex].status = "Offline";
       setUsers(newUsers);
     } else if (result.data.type == "list") {
       setUsers(result.data.list);
@@ -38,39 +41,14 @@ function ChatComponent({ API, socket }) {
       { authorised == false ? <AuthComponent autologin={autologin} API={API} socket={socket} handleAuthorised={setStatusAuthorised} /> : null}
       <div>
         <div className="Contacts">
-          <div className="Chat-element">
-            <span>Conversation name</span>
-            <button className="Left-from-conversation">Leave</button>
-            <button className="Link-conversation">Invite</button>
-          </div>
+          {authorised == false ? <ConversationComponent API={API} socket={socket} /> : null}
         </div>
         <div className="Interactive-frame">
           <div className="Chat-frame">
-            <div className="Chat-messages-list">
-              <li>
-                <div>
-                  <span className="message">HI everyone!</span>
-                </div>
-              </li>
-            </div>
-            <div className="Controls-panel">
-              <button className="Video-call">Call</button>
-              <input className="Message-input" placeholder="Input..."></input>
-              <button className="Send-message">Send</button>
-            </div>
+            {authorised == false ? <FrameChatComponent API={API} socket={socket} /> : null}
           </div>
           <div className="Details-Frame">
-            <div className="Contacts-data">
-              <span>Name:</span>
-              <span>Surname:</span>
-              <span>Nickname:</span>
-              <span>Link:</span>
-              <span>Register data:</span>
-              <span>Online:</span>
-            </div>
-            <div className="Contact-interactive">
-              <button className="Add-new-conversation">New Cpnversation</button>
-            </div>
+            {authorised == false ? <FrameDetailsComponent API={API} socket={socket} /> : null}
           </div>
         </div>
       </div>
