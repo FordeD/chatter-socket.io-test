@@ -13,10 +13,12 @@ function ChatComponent({ API, socket }) {
 
   function handleSetSelf(data) {
     console.log("handleSetSelf", data);
+    setSelf(data);
+  }
+
+  if (Object.keys(self).length > 0) {
     socket.emit('User:list');
     socket.emit('Conversation:list');
-
-    setSelf(data);
   }
 
   function setStatusAuthorised(state) {
@@ -35,18 +37,6 @@ function ChatComponent({ API, socket }) {
       setUsers(newUsers);
     } else if (result.data.type == "list") {
       setUsers(result.data.list);
-    }
-  });
-
-  socket.on('User:list', (result) => {
-    console.log('User:list', result);
-    if (result.data.type == "list") {
-      let newUsers = [];
-      for (let i = 0; i < result.data.list.length; i++) {
-        let user = result.data.list[i];
-        newUsers.push(user);
-      }
-      setUsers(newUsers);
     }
   });
 

@@ -65,9 +65,9 @@ function ConversationComponent({ API, socket, users, self }) {
   if (conversations.length > 0) {
     conversationsList = conversations.map((conv) => {
       return (
-        <div onClick={openConversation(conv._id)} className="Chat-element">
+        <div onClick={(e) => openConversation(conv._id)} className="Chat-element">
           <span>{conv.name}</span>
-          <button onClick={leaveFromConversation(conv._id)} className="Leave-from-conversation">Leave</button>
+          <button onClick={(e) => leaveFromConversation(conv._id)} className="Leave-from-conversation">Leave</button>
         </div>
       )
     });
@@ -86,13 +86,13 @@ function ConversationComponent({ API, socket, users, self }) {
 
       let leaveButton = null;
       if (conversationWith) {
-        leaveButton = (<button onClick={leaveFromConversation(conversationWith)} className="Left-from-conversation">Leave</button>)
+        leaveButton = (<button onClick={(e) => leaveFromConversation(conversationWith)} className="Left-from-conversation">Leave</button>)
       }
 
       return (
         <div className="Chat-element">
           <div className={user.online ? "user-status-online" : "user-status-offline"}></div>
-          <span onClick={openConversation(conversationWith, user)}>
+          <span onClick={(e) => openConversation(conversationWith, user)}>
             {user.name + " " + user.surname}
           </span>
           {leaveButton}
